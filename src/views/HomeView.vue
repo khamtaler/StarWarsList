@@ -1,7 +1,9 @@
-<script setup></script>
+<script setup>
+import ListOfPeople from '@/components/ListOfPeople.vue'
+</script>
 
 <template>
   <main>
-    <h1>This is an home page</h1>
+    <ListOfPeople />
   </main>
 </template>
