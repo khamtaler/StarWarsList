@@ -21,8 +21,12 @@ watch(
     return peopleListStore.getplanetsLoaded
   },
   (newVal) => {
+    console.log('changed')
     if (Object.keys(currentQueryParam.value).length > 0 && newVal) {
+      console.log(Object.values(currentQueryParam.value)[0])
       if (Object.values(currentQueryParam.value)[0] === 'descending') {
+        peopleListStore.sortingKey = ''
+      } else {
         peopleListStore.sortingKey = Object.keys(currentQueryParam.value)[0]
       }
       if (
@@ -38,7 +42,7 @@ watch(
       ) {
         peopleListStore.sortInts(Object.keys(currentQueryParam.value)[0])
       }
-      if (Object.keys(currentQueryParam.value)[0] === 'planetName') {
+      if (Object.keys(currentQueryParam.value)[0] === 'planetname') {
         peopleListStore.sortPlanets()
       }
     }
@@ -156,12 +160,12 @@ watch(
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
               asc:
-                Object.keys(currentQueryParam)[0] === 'planetName' &&
+                Object.keys(currentQueryParam)[0] === 'planetname' &&
                 Object.values(currentQueryParam)[0] === 'ascending'
             },
             {
               desc:
-                Object.keys(currentQueryParam)[0] === 'planetName' &&
+                Object.keys(currentQueryParam)[0] === 'planetname' &&
                 Object.values(currentQueryParam)[0] === 'descending'
             }
           ]"

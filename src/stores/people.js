@@ -101,19 +101,19 @@ export const usePeopleList = defineStore('data', {
       }
     },
     sortPlanets() {
-      const key = 'planetName'
+      const key = 'planetname'
       if (this.sortingKey === key) {
         this.data.results.sort((a, b) => (a.homeworld.name < b.homeworld.name ? 1 : -1))
         this.sortingKey = ''
         this.updateRouteSortOrder(key)
       } else {
         this.data.results.sort((a, b) => (a.homeworld.name > b.homeworld.name ? 1 : -1))
-        this.sortingKey = 'planetName'
+        this.sortingKey = 'planetname'
         this.updateRouteSortOrder(key)
       }
     },
     updateRouteSortOrder(key) {
-      const currentSortOrder = this.sortingKey === key ? 'ascending' : 'descending'
+      const currentSortOrder = this.sortingKey === key ? 'descending' : 'ascending'
       const currentRoute = { ...router.currentRoute.value }
 
       const newRoute = {
