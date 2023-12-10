@@ -17,5 +17,22 @@
 }
 
 .active {
-  background-color: #d6d6d6;
+  @apply bg-gray-200;
+}
+.pointer {
+  position: relative;
+}
+.pointer:after,
+.pointer:before {
+  font-size: 8px;
+  position: absolute;
+  right: -10px;
+}
+.pointer:not(.desc):before {
+  content: '▲';
+  top: 0;
+}
+.pointer:not(.asc):after {
+  content: '▼';
+  bottom: 0;
 }

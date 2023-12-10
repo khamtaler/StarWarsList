@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-
+import { usePeopleList } from '@/stores/people'
 import spinner from '@/assets/svg/spinner.vue'
 import PlanetPopup from './PlanetPopup.vue'
 
@@ -9,7 +9,7 @@ const props = defineProps({
 })
 
 const isOpen = ref(false)
-
+const peopleListStore = usePeopleList()
 function closeModal() {
   isOpen.value = false
 }
@@ -26,15 +26,15 @@ function openModal() {
     <td class="px-3 py-3">{{ props.SinglePerson.created.split('T')[0] }}</td>
     <td class="px-3 py-3">{{ props.SinglePerson.edited.split('T')[0] }}</td>
     <td
-      class="cursor-pointer px-3 py-3"
-      v-if="typeof props.SinglePerson.homeworld === 'object'"
+      class="cursor-pointer px-3 py-3 underline hover:text-gray-400"
+      v-if="peopleListStore.getplanetsLoaded"
       @click="openModal()"
     >
       {{ props.SinglePerson.homeworld.name }}
     </td>
     <td class="px-3 py-3" v-else><spinner class="m-auto" /></td>
     <PlanetPopup
-      v-if="typeof props.SinglePerson.homeworld === 'object'"
+      v-if="peopleListStore.getplanetsLoaded"
       :open="isOpen"
       @closeModal="closeModal"
       :planet="props.SinglePerson.homeworld"
