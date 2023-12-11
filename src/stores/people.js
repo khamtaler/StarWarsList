@@ -26,7 +26,7 @@ export const usePeopleList = defineStore('data', {
   actions: {
     async getList() {
       this.dataLoaded = false
-      this.planetsLoaded = false
+
       this.data = {}
 
       await router.isReady()
@@ -45,7 +45,7 @@ export const usePeopleList = defineStore('data', {
         const response = await axios.get('https://swapi.dev/api/people/', {
           params: params
         })
-
+        this.planetsLoaded = false
         this.data = response.data
         this.dataLoaded = true
 
