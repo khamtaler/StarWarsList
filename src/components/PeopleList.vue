@@ -1,6 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue'
 import { usePeopleList } from '@/stores/people'
+import { useRouter } from 'vue-router'
 import PeopleListSearchbar from './PeopleListSearchbar.vue'
 import PeopleListItem from './PeopleListItem.vue'
 import PeopleListItemPlaceholder from './PeopleListItemPlaceholder.vue'
@@ -8,15 +9,23 @@ import PeopleListPagination from './PeopleListPagination.vue'
 import PeopleListHeaders from './PeopleListHeaders.vue'
 
 const peopleListStore = usePeopleList()
+const router = useRouter()
 
 onBeforeMount(() => {
   peopleListStore.getList()
 })
+
+async function clearParams() {
+  await router.push({ query: {} })
+  peopleListStore.getList()
+}
 </script>
 
 <template>
   <div class="mx-5 mt-[100px] flex flex-col items-center justify-center text-center">
-    <h2 class="mb-[30px] text-2xl font-bold">List of People</h2>
+    <h2 class="mb-[30px] cursor-pointer text-2xl font-bold" @click="clearParams()">
+      List of People
+    </h2>
     <div
       class="no-scrollbar w-full max-w-[1000px] overflow-scroll rounded-xl border-2 p-5 lg:overflow-auto"
     >
@@ -36,7 +45,9 @@ onBeforeMount(() => {
         </tbody>
       </table>
       <PeopleListItemPlaceholder v-if="!peopleListStore.getdataLoaded" />
-      <span v-if="peopleListStore.getdataLoaded && peopleListStore.getData.results.length === 0"
+      <span
+        v-if="peopleListStore.getdataLoaded && peopleListStore.getData.results.length === 0"
+        class="py-3 text-base"
         >Sorry, there is no data matching your search</span
       >
       <PeopleListPagination v-if="peopleListStore.getTotalPages && peopleListStore.getdataLoaded" />

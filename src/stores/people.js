@@ -1,9 +1,8 @@
 import axios from 'axios'
 import { defineStore } from 'pinia'
-const ITEMS_PER_PAGE = 10
 import router from '@/router'
 
-let cancelToken = null
+const ITEMS_PER_PAGE = 10
 
 export const usePeopleList = defineStore('data', {
   state: () => {
@@ -11,7 +10,6 @@ export const usePeopleList = defineStore('data', {
       data: {},
       dataLoaded: false,
       planetsLoaded: false,
-      sortingKey: null,
       pagination: {
         currentPage: 1,
         totalPages: null
@@ -22,24 +20,32 @@ export const usePeopleList = defineStore('data', {
     getData: (state) => state.data,
     getdataLoaded: (state) => state.dataLoaded,
     getplanetsLoaded: (state) => state.planetsLoaded,
-    getSortingKey: (state) => state.sortingKey,
     getCurrentPage: (state) => state.pagination.currentPage,
     getTotalPages: (state) => Math.ceil(state.data.count / ITEMS_PER_PAGE)
   },
   actions: {
-    async getList(keyword) {
-      this.data = {}
+    async getList() {
       this.dataLoaded = false
       this.planetsLoaded = false
-      const params = {}
+      this.data = {}
 
-      if (cancelToken) {
-        cancelToken.cancel('Request canceled')
+      await router.isReady()
+      const currentQuery = { ...router.currentRoute.value.query }
+
+      if (currentQuery && currentQuery.page) {
+        this.pagination.currentPage = parseInt(currentQuery.page)
+      } else {
+        this.pagination.currentPage = 1
       }
-      cancelToken = axios.CancelToken.source()
-      keyword ? (params.search = keyword) : (params.page = this.pagination.currentPage)
+      let params = {}
+      if (currentQuery.page) params.page = currentQuery.page
+      if (currentQuery.search) params.search = currentQuery.search
+
       try {
-        const response = await axios.get('https://swapi.dev/api/people/', { params: params })
+        const response = await axios.get('https://swapi.dev/api/people/', {
+          params: params
+        })
+
         this.data = response.data
         this.dataLoaded = true
 
@@ -56,6 +62,7 @@ export const usePeopleList = defineStore('data', {
           if (
             homeworldResponse &&
             homeworldResponse.data &&
+            this.data.results &&
             this.data.results[index] != undefined
           ) {
             this.data.results[index]['homeworld'] = homeworldResponse.data
@@ -63,64 +70,80 @@ export const usePeopleList = defineStore('data', {
           this.planetsLoaded = true
         })
       } catch (err) {
-        if (axios.isCancel(err)) {
-          console.log('Request canceled', err.message)
-        } else {
-          console.error('Error:', err)
-        }
+        console.error('Error:', err)
       }
     },
-    setPage(page) {
-      this.pagination.currentPage = page
+    async setPage(page) {
+      const currentRoute = { ...router.currentRoute.value }
+      const newRoute = {
+        ...currentRoute,
+        query: { ...currentRoute.query, page: page }
+      }
+
+      await router.replace(newRoute)
       this.getList()
     },
-    sortStrings(key) {
-      if (this.sortingKey === key) {
+    async sortStrings(key, order) {
+      await this.updateRouteSortOrder(key, order)
+      const currentRoute = { ...router.currentRoute.value }
+
+      if (currentRoute.query.orderby === key && currentRoute.query.order === 'asc') {
         this.data.results.sort((a, b) => (a[key] < b[key] ? 1 : -1))
-        this.sortingKey = ''
-        this.updateRouteSortOrder(key)
       } else {
         this.data.results.sort((a, b) => (a[key] > b[key] ? 1 : -1))
-        this.sortingKey = key
-        this.updateRouteSortOrder(key)
       }
     },
-    sortInts(key) {
-      if (this.sortingKey === key) {
-        this.data.results.sort(
-          (a, b) => (b[key] === 'unknown' ? 0 : b[key]) - (a[key] === 'unknown' ? 0 : a[key])
-        )
-        this.sortingKey = ''
-        this.updateRouteSortOrder(key)
-      } else {
+    async sortInts(key, order) {
+      await this.updateRouteSortOrder(key, order)
+      const currentRoute = { ...router.currentRoute.value }
+
+      if (currentRoute.query.orderby === key && currentRoute.query.order === 'asc') {
         this.data.results.sort(
           (a, b) => (a[key] === 'unknown' ? 0 : a[key]) - (b[key] === 'unknown' ? 0 : b[key])
         )
-        this.sortingKey = key
-        this.updateRouteSortOrder(key)
+      } else {
+        this.data.results.sort(
+          (a, b) => (b[key] === 'unknown' ? 0 : b[key]) - (a[key] === 'unknown' ? 0 : a[key])
+        )
       }
     },
-    sortPlanets() {
-      const key = 'planetname'
-      if (this.sortingKey === key) {
+    async sortDates(key, order) {
+      await this.updateRouteSortOrder(key, order)
+      const currentRoute = { ...router.currentRoute.value }
+
+      if (currentRoute.query.orderby === key && currentRoute.query.order === 'asc') {
+        this.data.results.sort(
+          (a, b) => new Date(a[key.split('T')[0]]) - new Date(b[key].split('T')[0])
+        )
+      } else {
+        this.data.results.sort(
+          (a, b) => new Date(b[key].split('T')[0]) - new Date(a[key].split('T')[0])
+        )
+      }
+    },
+    async sortPlanets(key, order) {
+      await this.updateRouteSortOrder(key, order)
+      const currentRoute = { ...router.currentRoute.value }
+      console.log(currentRoute.query.order)
+      if (currentRoute.query.orderby === key && currentRoute.query.order === 'desc') {
         this.data.results.sort((a, b) => (a.homeworld.name < b.homeworld.name ? 1 : -1))
-        this.sortingKey = ''
-        this.updateRouteSortOrder(key)
       } else {
         this.data.results.sort((a, b) => (a.homeworld.name > b.homeworld.name ? 1 : -1))
-        this.sortingKey = 'planetname'
-        this.updateRouteSortOrder(key)
       }
     },
-    updateRouteSortOrder(key) {
-      const currentSortOrder = this.sortingKey === key ? 'descending' : 'ascending'
+    async updateRouteSortOrder(key, order) {
       const currentRoute = { ...router.currentRoute.value }
+      let newSortOrder = order
+        ? currentRoute.query.order
+        : currentRoute.query.orderby === key && currentRoute.query.order === 'desc'
+          ? 'asc'
+          : 'desc'
 
       const newRoute = {
         ...currentRoute,
-        query: { [key]: currentSortOrder }
+        query: { ...currentRoute.query, order: newSortOrder, orderby: key }
       }
-      router.replace(newRoute)
+      await router.replace(newRoute)
     }
   }
 })

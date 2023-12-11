@@ -1,12 +1,23 @@
 <script setup>
 import debounce from 'debounce'
+import { useRoute, useRouter } from 'vue-router'
 import { usePeopleList } from '@/stores/people'
 
 const peopleListStore = usePeopleList()
+const route = useRoute()
+const router = useRouter()
+const debouncedWrite = debounce(async (e) => {
+  if (e.length !== 0) {
+    let newRoute = {
+      query: { search: e }
+    }
 
-const debouncedWrite = debounce((e) => {
-  peopleListStore.getList(e)
-  peopleListStore.pagination.currentPage = 1
+    await router.push(newRoute)
+    peopleListStore.getList()
+  } else {
+    await router.push({ query: {} })
+    peopleListStore.getList()
+  }
 }, 1000)
 
 function handleSearch(e) {
@@ -43,9 +54,11 @@ function handleSearch(e) {
         <input
           type="search"
           id="default-search"
-          class="mb-3 block w-[30%] rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 ps-10 text-sm text-gray-900 outline-none focus:border-gray-500 focus:ring-gray-500"
+          class="mb-3 block w-[30%] min-w-[200px] rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 ps-10 text-sm text-gray-900 outline-none focus:border-gray-500 focus:ring-gray-500"
           placeholder="Search names..."
+          :value="route.query.search ? route.query.search : ''"
           @input="handleSearch($event.target.value)"
+          @keydown.enter.prevent
         />
       </div>
     </form>

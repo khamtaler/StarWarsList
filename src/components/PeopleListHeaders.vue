@@ -21,29 +21,24 @@ watch(
     return peopleListStore.getplanetsLoaded
   },
   (newVal) => {
-    console.log('changed')
-    if (Object.keys(currentQueryParam.value).length > 0 && newVal) {
-      console.log(Object.values(currentQueryParam.value)[0])
-      if (Object.values(currentQueryParam.value)[0] === 'descending') {
-        peopleListStore.sortingKey = ''
-      } else {
-        peopleListStore.sortingKey = Object.keys(currentQueryParam.value)[0]
+    if (newVal && currentQueryParam.value.orderby && currentQueryParam.value.order) {
+      if (currentQueryParam.value.orderby === 'name') {
+        peopleListStore.sortStrings(currentQueryParam.value.orderby, currentQueryParam.value.order)
       }
       if (
-        Object.keys(currentQueryParam.value)[0] === 'name' ||
-        Object.keys(currentQueryParam.value)[0] === 'created' ||
-        Object.keys(currentQueryParam.value)[0] === 'edited'
+        currentQueryParam.value.orderby === 'height' ||
+        currentQueryParam.value.orderby === 'mass'
       ) {
-        peopleListStore.sortStrings(Object.keys(currentQueryParam.value)[0])
+        peopleListStore.sortInts(currentQueryParam.value.orderby, currentQueryParam.value.order)
       }
       if (
-        Object.keys(currentQueryParam.value)[0] === 'height' ||
-        Object.keys(currentQueryParam.value)[0] === 'mass'
+        currentQueryParam.value.orderby === 'created' ||
+        currentQueryParam.value.orderby === 'edited'
       ) {
-        peopleListStore.sortInts(Object.keys(currentQueryParam.value)[0])
+        peopleListStore.sortDates(currentQueryParam.value.orderby, currentQueryParam.value.order)
       }
-      if (Object.keys(currentQueryParam.value)[0] === 'planetname') {
-        peopleListStore.sortPlanets()
+      if (currentQueryParam.value.orderby === 'planetname') {
+        peopleListStore.sortPlanets(currentQueryParam.value.orderby, currentQueryParam.value.order)
       }
     }
   }
@@ -59,14 +54,10 @@ watch(
           :class="[
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
-              asc:
-                Object.keys(currentQueryParam)[0] === 'name' &&
-                Object.values(currentQueryParam)[0] === 'ascending'
+              asc: currentQueryParam.orderby === 'name' && currentQueryParam.order === 'asc'
             },
             {
-              desc:
-                Object.keys(currentQueryParam)[0] === 'name' &&
-                Object.values(currentQueryParam)[0] === 'descending'
+              desc: currentQueryParam.orderby === 'name' && currentQueryParam.order === 'desc'
             }
           ]"
           >Name</span
@@ -79,14 +70,10 @@ watch(
           :class="[
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
-              asc:
-                Object.keys(currentQueryParam)[0] === 'height' &&
-                Object.values(currentQueryParam)[0] === 'ascending'
+              asc: currentQueryParam.orderby === 'height' && currentQueryParam.order === 'asc'
             },
             {
-              desc:
-                Object.keys(currentQueryParam)[0] === 'height' &&
-                Object.values(currentQueryParam)[0] === 'descending'
+              desc: currentQueryParam.orderby === 'height' && currentQueryParam.order === 'desc'
             }
           ]"
           >Height</span
@@ -99,14 +86,10 @@ watch(
           :class="[
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
-              asc:
-                Object.keys(currentQueryParam)[0] === 'mass' &&
-                Object.values(currentQueryParam)[0] === 'ascending'
+              asc: currentQueryParam.orderby === 'mass' && currentQueryParam.order === 'asc'
             },
             {
-              desc:
-                Object.keys(currentQueryParam)[0] === 'mass' &&
-                Object.values(currentQueryParam)[0] === 'descending'
+              desc: currentQueryParam.orderby === 'mass' && currentQueryParam.order === 'desc'
             }
           ]"
           >Mass</span
@@ -115,18 +98,14 @@ watch(
       <th class="pb-3">
         <span
           class="cursor-pointer"
-          @click="peopleListStore.sortStrings('created')"
+          @click="peopleListStore.sortDates('created')"
           :class="[
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
-              asc:
-                Object.keys(currentQueryParam)[0] === 'created' &&
-                Object.values(currentQueryParam)[0] === 'ascending'
+              asc: currentQueryParam.orderby === 'created' && currentQueryParam.order === 'asc'
             },
             {
-              desc:
-                Object.keys(currentQueryParam)[0] === 'created' &&
-                Object.values(currentQueryParam)[0] === 'descending'
+              desc: currentQueryParam.orderby === 'created' && currentQueryParam.order === 'desc'
             }
           ]"
           >Created</span
@@ -135,18 +114,14 @@ watch(
       <th class="pb-3">
         <span
           class="cursor-pointer"
-          @click="peopleListStore.sortStrings('edited')"
+          @click="peopleListStore.sortDates('edited')"
           :class="[
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
-              asc:
-                Object.keys(currentQueryParam)[0] === 'edited' &&
-                Object.values(currentQueryParam)[0] === 'ascending'
+              asc: currentQueryParam.orderby === 'edited' && currentQueryParam.order === 'asc'
             },
             {
-              desc:
-                Object.keys(currentQueryParam)[0] === 'edited' &&
-                Object.values(currentQueryParam)[0] === 'descending'
+              desc: currentQueryParam.orderby === 'edited' && currentQueryParam.order === 'desc'
             }
           ]"
           >Edited</span
@@ -155,18 +130,14 @@ watch(
       <th class="pb-3">
         <span
           class="cursor-pointer"
-          @click="peopleListStore.sortPlanets()"
+          @click="peopleListStore.sortPlanets('planetname')"
           :class="[
             !peopleListStore.getplanetsLoaded ? 'pointer-events-none' : 'pointer',
             {
-              asc:
-                Object.keys(currentQueryParam)[0] === 'planetname' &&
-                Object.values(currentQueryParam)[0] === 'ascending'
+              asc: currentQueryParam.orderby === 'planetname' && currentQueryParam.order === 'asc'
             },
             {
-              desc:
-                Object.keys(currentQueryParam)[0] === 'planetname' &&
-                Object.values(currentQueryParam)[0] === 'descending'
+              desc: currentQueryParam.orderby === 'planetname' && currentQueryParam.order === 'desc'
             }
           ]"
           >Planet Name</span

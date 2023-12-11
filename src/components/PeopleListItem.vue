@@ -34,7 +34,7 @@ function openModal() {
     </td>
     <td class="px-3 py-3" v-else><spinner class="m-auto" /></td>
     <PlanetPopup
-      v-if="peopleListStore.getplanetsLoaded"
+      v-if="typeof props.SinglePerson.homeworld !== 'string' && peopleListStore.getplanetsLoaded"
       :open="isOpen"
       @closeModal="closeModal"
       :planet="props.SinglePerson.homeworld"

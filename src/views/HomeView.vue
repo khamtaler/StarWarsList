@@ -1,9 +1,8 @@
 <script setup>
-import PeopleList from '@/components/PeopleList.vue'
+import PeopleList from '../components/PeopleList.vue'
 </script>
-
 <template>
-  <main>
+  <div>
     <PeopleList />
-  </main>
+  </div>
 </template>
