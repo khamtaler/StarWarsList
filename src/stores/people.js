@@ -124,7 +124,6 @@ export const usePeopleList = defineStore('data', {
     async sortPlanets(key, order) {
       await this.updateRouteSortOrder(key, order)
       const currentRoute = { ...router.currentRoute.value }
-      console.log(currentRoute.query.order)
       if (currentRoute.query.orderby === key && currentRoute.query.order === 'desc') {
         this.data.results.sort((a, b) => (a.homeworld.name < b.homeworld.name ? 1 : -1))
       } else {
